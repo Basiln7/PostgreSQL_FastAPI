@@ -6,3 +6,4 @@ Base = declarative_base()
 
 # 👇 import all models here
 from app.models.user import User
+from app.models.transaction import Transaction  # ✅ Add this line

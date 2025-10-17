@@ -1,3 +1,4 @@
+#main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.base import Base
@@ -5,8 +6,8 @@ from app.db.session import engine
 
 from app.api.routes import user, transaction
 
-
 Base.metadata.create_all(bind=engine)
+
 
 app = FastAPI(title="FastAPI PostgreSQL Project",
               description="A FastAPI project",
