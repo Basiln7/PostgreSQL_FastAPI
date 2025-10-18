@@ -1,28 +1,24 @@
-# api/routes/transaction.py
+# app/routers/transaction.py (snippet)
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.models.transaction import Transaction
-from app.models.user import User
 from app.schemas.transaction import TransactionCreate, TransactionOut
+from app.models.transaction import Transaction
+from app.core.deps import get_current_user
 
-router = APIRouter()
+router = APIRouter(prefix="/transactions", tags=["Transactions"])
 
-
-@router.post("/transactions", response_model=TransactionOut)
-def add_transaction(txn: TransactionCreate, db: Session = Depends(get_db)):
-    # check if user exists
-    user = db.query(User).filter(User.id == txn.user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    new_txn = Transaction(amount=txn.amount, user_id=txn.user_id)
+@router.post("/", response_model=TransactionOut)
+def create_transaction(txn_in: TransactionCreate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    # Ensure current_user.id == txn_in.user_id or enforce only own account
+    if current_user.id != txn_in.user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to create transaction for this user")
+    new_txn = Transaction(amount=txn_in.amount, user_id=txn_in.user_id)
     db.add(new_txn)
     db.commit()
     db.refresh(new_txn)
     return new_txn
 
-
-@router.get("/transactions", response_model=list[TransactionOut])
-def get_transactions(db: Session = Depends(get_db)):
-    return db.query(Transaction).all()
+@router.get("/", response_model=list[TransactionOut])
+def list_transactions(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    return db.query(Transaction).filter(Transaction.user_id == current_user.id).all()

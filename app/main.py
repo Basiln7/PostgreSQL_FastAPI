@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.db.base import Base
 from app.db.session import engine
 
-from app.api.routes import user, transaction
+from app.api.routes import user, transaction ,auth
 
 Base.metadata.create_all(bind=engine)
 
@@ -22,9 +22,11 @@ app.add_middleware(
 )
 
 # include routers
-app.include_router(user.router, prefix="/api", tags=["User"])
-app.include_router(transaction.router, prefix="/api", tags=["Transaction"])
-app.include_router(user.router)
+...
+app.include_router(auth.router, prefix="/api")   # or prefix="" as you prefer
+app.include_router(user.router, prefix="/api")
+app.include_router(transaction.router, prefix="/api")
+
 @app.get("/")
 def root():
     return {"message": "Welcome to FastAPI + PostgreSQL CRM Demo"}
